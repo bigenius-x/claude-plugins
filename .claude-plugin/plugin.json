@@ -1,6 +1,6 @@
 {
   "name": "bigenius-x-modeling",
-  "version": "1.0.26137",
+  "version": "1.0.26141",
   "description": "Model biGENIUS-X projects with the biGENIUS modeling MCP server: skill, server entry and a hook that keeps structural edits in the tools.",
   "author": {
     "name": "biGENIUS AG"
