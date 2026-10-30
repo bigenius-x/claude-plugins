@@ -1,0 +1,13 @@
+{
+  "name": "bigenius",
+  "owner": {
+    "name": "biGENIUS AG"
+  },
+  "plugins": [
+    {
+      "name": "bigenius-x-modeling",
+      "source": "./",
+      "description": "Model biGENIUS-X projects with the biGENIUS modeling MCP server."
+    }
+  ]
+}
