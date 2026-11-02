@@ -9,6 +9,15 @@
             "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/model-edit-reminder.js\""
           }
         ]
+      },
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/transfer-allow.js\""
+          }
+        ]
       }
     ]
   }

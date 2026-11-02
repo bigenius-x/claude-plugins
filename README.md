@@ -7,7 +7,7 @@ the biGENIUS modeling MCP server.
 | --- | --- |
 | `skills/bigenius-x-modeling/SKILL.md` | When to use the tools, the process, one worked example |
 | `.mcp.json` | Server `bigenius-modeling` (HTTP, `https://mcp.bigenius-x.com/modeling`, other host with `BIGENIUS_MCP_HOST`) |
-| `hooks/` | Reminds Claude to make structural changes of `modelobjects/**/*.yml` and `views/*.yml` with the tools |
+| `hooks/` | Reminds Claude to make structural changes of `modelobjects/**/*.yml` and `views/*.yml` with the tools; allows the file transfer commands of `open_workspace` and `download_changes` |
 | `.claude-plugin/` | Plugin manifest and marketplace `bigenius` |
 
 ## Requirements
@@ -58,6 +58,16 @@ Then restart Claude Code.
 
 The plugin connects to `https://mcp.bigenius-x.com/modeling`. For another server, set the environment variable before
 you start Claude Code, for example in PowerShell `$env:BIGENIUS_MCP_HOST = "mcp-test.example.com"`.
+
+## Troubleshooting
+
+- **Login fails or the tools are missing:** in Claude Desktop, Settings → Connectors, select `bigenius-modeling` and
+  connect it again; in the terminal, `/mcp`.
+- **The upload or download command waits for approval:** the plugin's hook allows exactly the transfer commands that
+  `open_workspace` and `download_changes` return, for the server of the plugin (`BIGENIUS_MCP_HOST` or
+  `mcp.bigenius-x.com`). If Claude changes the command (for example adds `cd`), or the hook cannot run (Node.js
+  missing), the normal permission check applies: approve the command in the chat. Delete commands of
+  `download_changes` always need the approval.
 
 ## Claude Desktop chat and claude.ai
 

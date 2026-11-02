@@ -34,6 +34,8 @@ The server runs at `https://<host>/modeling`. If the tools are missing, connect 
    - Call `open_workspace`. Run the returned command for your shell in the repository root:
      - bash, also Git Bash: `tar -czf - $(ls -d project.yml config.yml task-lists.yml modelobjects views discoveries 2>/dev/null) | curl -sf --upload-file - "<url>"`
      - PowerShell: the `powershell` command of the result (it writes a temp file and calls `tar.exe` and `curl.exe`).
+   - Run the transfer commands exactly as returned, as a command of their own: the plugin allows only these without a
+     prompt. Change into the repository root in a separate command first if needed.
    - Use the `workspaceId` with all other tools.
 2. **Read** with `list_project_objects`, `show_project_object` and the discovery files under `discoveries/`.
 3. **Look up the rules** of each type before using it the first time: `describe_type`. Guidance and recipes:
