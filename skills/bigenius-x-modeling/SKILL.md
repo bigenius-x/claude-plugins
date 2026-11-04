@@ -18,10 +18,12 @@ The server runs at `https://<host>/modeling`. If the tools are missing, connect 
 1. **No invented ids.** Every GUID comes from a tool (`new_ids` for manual edits) or from an existing file.
 2. **Structure changes only through the tools:** `create_model_object`, `add_relationship`, `set_relationship_properties`,
    `add_terms`, `add_term`, `set_business_key`, `set_data_classification`, `build_dataflow`, `rename_model_element`,
-   `delete_model_element`, or several of them in `run_batch`.
+   `delete_model_element`, `add_to_view`, or several of them in `run_batch`.
 3. **By hand only what has no cascade:** expressions in mappings and filters, descriptions, properties. Then call
    `sync_workspace` and `validate_project`.
 4. **Change existing objects only when the user asks for it.**
+   **Views:** without a view named by the user, new objects go to the default view. When the user names a view, pass
+   `view` to `create_model_object` and call `add_to_view` for changed objects; a view that does not exist yet is created.
 5. **Show the plan first** (objects, business keys, relationships, historization) and wait for the user's OK. When grain,
    life cycle, history or the formula of a measure is unclear, ask instead of guessing.
 6. **Validate after each layer** with `validate_project`. Fix errors, tell the user about warnings.
@@ -40,7 +42,7 @@ The server runs at `https://<host>/modeling`. If the tools are missing, connect 
    - Run the transfer commands exactly as returned, as a command of their own: the plugin allows only these without a
      prompt. Change into the repository root in a separate command first if needed.
    - Use the `workspaceId` with all other tools.
-2. **Read** with `list_project_objects`, `show_project_object` and the discovery files under `discoveries/`. Source
+2. **Read** with `list_project_objects`, `show_project_object`, `list_views` and the discovery files under `discoveries/`. Source
    objects, discoveries and linked projects come from the Discovery App and the biGENIUS-X UI; when one is missing, tell
    the user the steps from `get_modeling_guide` with `data-connections`.
 3. **Look up the rules** of each type before using it the first time: `describe_type`. Guidance and recipes:
