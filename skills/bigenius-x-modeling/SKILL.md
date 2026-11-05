@@ -1,12 +1,12 @@
 ---
 name: bigenius-x-modeling
-description: Model a data warehouse in a biGENIUS-X project (Stage, Hub, Link, Satellite, views, Mart Dimension, Mart Fact) with the biGENIUS modeling MCP tools. Use when someone wants to create, change, check or delete model objects in a biGENIUS-X repository, or build a model from a discovery.
+description: Model a data warehouse in a biGENIUS-X project, Data Vault (Stage, Hub, Link, Satellite, views) or Dimensional (Stage, Entity, Fact), with Mart Dimension and Mart Fact, using the biGENIUS modeling MCP tools. Use when someone wants to create, change, check or delete model objects in a biGENIUS-X repository, or build a model from a discovery.
 ---
 
 # biGENIUS-X modeling
 
-You build the model; biGENIUS-X generates the code from it. You decide what is built: hubs, business keys, links,
-satellites, views, dimensions and facts. The tools of the MCP server `bigenius-modeling` write the project files the way
+You build the model; biGENIUS-X generates the code from it. You decide what is built: hubs, links, satellites and views
+in a Data Vault project, entities and facts in a Dimensional project, dimensions and facts in a mart. The tools of the MCP server `bigenius-modeling` write the project files the way
 the biGENIUS-X UI does: ids, default terms, foreign key and hash key terms, mapping stubs, and all follow-up changes when
 something is renamed or deleted.
 
@@ -45,26 +45,30 @@ The server runs at `https://<host>/modeling`. If the tools are missing, connect 
 2. **Read** with `list_project_objects`, `show_project_object`, `list_views` and the discovery files under `discoveries/`. Source
    objects, discoveries and linked projects come from the Discovery App and the biGENIUS-X UI; when one is missing, tell
    the user the steps from `get_modeling_guide` with `data-connections`.
-3. **Look up the rules** of each type before using it the first time: `describe_type`. Guidance and recipes:
-   `get_modeling_guide` with `process`, `raw-vault`, `business-vault`, `mart`, `naming`, `repo-format` or
+3. **Check the architecture** with `get_generator_catalog`. It lists the types this project can create and the guides
+   that apply. Plan only with these types. When a type is refused, do not rebuild it with a pattern of another
+   architecture: in a Dimensional project a dimension is an Entity, not a Hub with a Satellite or a Reference Table.
+4. **Look up the rules** of each type before using it the first time: `describe_type`. Guidance and recipes:
+   `get_modeling_guide` with `process`, `raw-vault`, `business-vault`, `dimensional`, `mart`, `naming`, `repo-format` or
    `data-connections`.
-4. **Plan** and get the user's OK.
-5. **Build layer by layer** (Stage, Raw Vault, Business Vault, Mart), a small vertical slice first. Per object:
-   `create_model_object`, `add_relationship`, `add_terms`, `build_dataflow`. Put one layer into one `run_batch`.
-6. **Validate** with `validate_project`. Then ask the user whether to run `run_model_calculation` for the layer; run
+5. **Plan** and get the user's OK.
+6. **Build layer by layer**, a small vertical slice first: Stage, Raw Vault, Business Vault, Mart in a Data Vault
+   project; Stage, Entity and Fact, and optionally the Mart in a Dimensional project, by use case: ask. Per object: `create_model_object`, `add_relationship`,
+   `add_terms`, `build_dataflow`. Put one layer into one `run_batch`.
+7. **Validate** with `validate_project`. Then ask the user whether to run `run_model_calculation` for the layer; run
    it only on a yes.
-7. **Write the changes into the repository** with `download_changes` after each layer and before any manual edit. Run the
+8. **Write the changes into the repository** with `download_changes` after each layer and before any manual edit. Run the
    returned command in the repository root, then its delete command (`deleteBash` or `deletePowerShell`).
-8. **Hand over:** list new and changed objects, open warnings and assumptions, and ask whether to run
+9. **Hand over:** list new and changed objects, open warnings and assumptions, and ask whether to run
    `run_model_calculation` before the user opens the repository in biGENIUS-X. Findings from the model calculation or
    the UI come back to you (prompt `fix_findings`).
 
-## Example
+## Example: Data Vault
 
 User: "Build Hub, Satellite and Dimension for Customer from the CRM discovery."
 
 1. `open_workspace`, run the upload command.
-2. `list_project_objects`, `show_project_object("Source:Customer")`, `describe_type("Hub")`.
+2. `get_generator_catalog`, `list_project_objects`, `show_project_object("Source:Customer")`, `describe_type("Hub")`.
 3. Plan: Stage `Customer`, Hub `Customer` with business key `CustomerId`, Satellite `Customer` with the descriptive
    attributes, Business Current View, Mart Dimension `Customer` as SCD1. Wait for the OK.
 4. `run_batch` with:
@@ -78,6 +82,21 @@ User: "Build Hub, Satellite and Dimension for Customer from the CRM discovery."
 5. `validate_project`, then the same for the Business Current View and the Mart Dimension.
 6. `download_changes`, run the command and its delete command.
 7. Tell the user what changed and ask whether to run `run_model_calculation`; then what to check in the biGENIUS-X UI.
+
+## Example: Dimensional
+
+User: "Create a historized dimension for Customer."
+
+1. `open_workspace`, run the upload command, `get_generator_catalog`: the types are Stage, Entity, Fact and the mart
+   types, the guides include `dimensional`.
+2. Plan: Stage `Customer`, Entity `Customer` with business key `Id` and SCD2 attributes. Wait for the OK.
+3. `run_batch` with:
+   - `create_model_object(type: "Stage", name: "Customer")`, `add_terms(target: "Stage:Customer", source: "Source:Customer", terms: ["*"])`,
+     `build_dataflow(target: "Stage:Customer", sources: ["Source:Customer"], mappings: ["BG_SourceSystem='CRM'"])`
+   - `create_model_object(type: "Entity", name: "Customer")`,
+     `add_terms(target: "Entity:Customer", source: "Stage:Customer", terms: ["Id", "Name", "City"], businessKeys: ["Id"], historization: "SCD2")`,
+     `build_dataflow(target: "Entity:Customer", sources: ["Stage:Customer"], mappings: ["BG_SourceSystem='CRM'"])`
+4. `validate_project`, `download_changes`, then the hand-over as above.
 
 ## Without a shell
 
