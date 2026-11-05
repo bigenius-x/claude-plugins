@@ -30,12 +30,9 @@ const paths = {
   download: /^\/workspaces\/[0-9a-f]{32}\/download\/[0-9a-f]{12}$/,
 };
 
-// the server URL of .mcp.json with ${NAME} and ${NAME:-default} resolved as Claude Code does, e.g. BIGENIUS_MCP_HOST
 function serverOrigin() {
   const config = JSON.parse(fs.readFileSync(path.join(__dirname, "..", ".mcp.json"), "utf8"));
-  const url = config.mcpServers["bigenius-modeling"].url
-    .replace(/\$\{([A-Za-z_][A-Za-z0-9_]*)(?::-([^}]*))?\}/g, (_, name, fallback) => process.env[name] || fallback || "");
-  return new URL(url).origin;
+  return new URL(config.mcpServers["bigenius-modeling"].url).origin;
 }
 
 function isTransferUrl(raw, kind, origin) {

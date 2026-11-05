@@ -2,7 +2,7 @@
   "mcpServers": {
     "bigenius-modeling": {
       "type": "http",
-      "url": "https://${BIGENIUS_MCP_HOST:-mcp.bigenius-x.com}/modeling"
+      "url": "https://mcp.bigenius-x.com/modeling"
     }
   }
 }
