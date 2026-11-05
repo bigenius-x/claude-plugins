@@ -1,6 +1,6 @@
 # biGENIUS Claude plugins
 
-Plugin `bigenius-x-modeling` for Claude Code: model biGENIUS-X projects (Data Vault or Dimensional, with Mart) with
+Plugin `bigenius-x-modeling` for Claude Code: model biGENIUS-X projects (Data Vault or Dimensional, with Mart, or Datastore) with
 the biGENIUS modeling MCP server.
 
 | Path | Content |

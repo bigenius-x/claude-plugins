@@ -1,12 +1,12 @@
 ---
 name: bigenius-x-modeling
-description: Model a data warehouse in a biGENIUS-X project, Data Vault (Stage, Hub, Link, Satellite, views) or Dimensional (Stage, Entity, Fact), with Mart Dimension and Mart Fact, using the biGENIUS modeling MCP tools. Use when someone wants to create, change, check or delete model objects in a biGENIUS-X repository, or build a model from a discovery.
+description: Model a data warehouse in a biGENIUS-X project, Data Vault (Stage, Hub, Link, Satellite, views) or Dimensional (Stage, Entity, Fact), with Mart Dimension and Mart Fact, or Datastore (Stage, Store Entity), using the biGENIUS modeling MCP tools. Use when someone wants to create, change, check or delete model objects in a biGENIUS-X repository, or build a model from a discovery.
 ---
 
 # biGENIUS-X modeling
 
 You build the model; biGENIUS-X generates the code from it. You decide what is built: hubs, links, satellites and views
-in a Data Vault project, entities and facts in a Dimensional project, dimensions and facts in a mart. The tools of the MCP server `bigenius-modeling` write the project files the way
+in a Data Vault project, entities and facts in a Dimensional project, store entities in a Datastore project, dimensions and facts in a mart. The tools of the MCP server `bigenius-modeling` write the project files the way
 the biGENIUS-X UI does: ids, default terms, foreign key and hash key terms, mapping stubs, and all follow-up changes when
 something is renamed or deleted.
 
@@ -17,7 +17,7 @@ The server runs at `https://<host>/modeling`. If the tools are missing, connect 
 
 1. **No invented ids.** Every GUID comes from a tool (`new_ids` for manual edits) or from an existing file.
 2. **Structure changes only through the tools:** `create_model_object`, `add_relationship`, `set_relationship_properties`,
-   `add_terms`, `add_term`, `set_business_key`, `set_data_classification`, `build_dataflow`, `rename_model_element`,
+   `set_object_properties`, `set_term_properties`, `set_term_data_type`, `add_terms`, `add_term`, `set_business_key`, `set_data_classification`, `build_dataflow`, `rename_model_element`,
    `delete_model_element`, `add_to_view`, or several of them in `run_batch`.
 3. **By hand only what has no cascade:** expressions in mappings and filters, descriptions, properties. Then call
    `sync_workspace` and `validate_project`.
@@ -49,13 +49,15 @@ The server runs at `https://<host>/modeling`. If the tools are missing, connect 
    the user the steps from `get_modeling_guide` with `data-connections`.
 3. **Check the architecture** with `get_generator_catalog`. It lists the types this project can create and the guides
    that apply. Plan only with these types. When a type is refused, do not rebuild it with a pattern of another
-   architecture: in a Dimensional project a dimension is an Entity, not a Hub with a Satellite or a Reference Table.
-4. **Look up the rules** of each type before using it the first time: `describe_type`. Guidance and recipes:
-   `get_modeling_guide` with `process`, `raw-vault`, `business-vault`, `dimensional`, `mart`, `naming`, `repo-format` or
+   architecture: in a Dimensional project a dimension is an Entity, not a Hub with a Satellite or a Reference Table; in a
+   Datastore project a source table is a Stage with a Store Entity, without relationships.
+4. **Look up the rules** of each type before using it the first time: `describe_type`. It also lists the properties the
+   generator offers for the type; a name can mean something else on another type. Guidance and recipes:
+   `get_modeling_guide` with `process`, `raw-vault`, `business-vault`, `dimensional`, `datastore`, `mart`, `naming`, `repo-format` or
    `data-connections`.
 5. **Plan** and get the user's OK.
 6. **Build layer by layer**, a small vertical slice first: Stage, Raw Vault, Business Vault, Mart in a Data Vault
-   project; Stage, Entity and Fact, and optionally the Mart in a Dimensional project, by use case: ask. Per object: `create_model_object`, `add_relationship`,
+   project; Stage, Entity and Fact, and optionally the Mart in a Dimensional project, by use case: ask; Stage and Store Entity in a Datastore project. Per object: `create_model_object`, `add_relationship`,
    `add_terms`, `build_dataflow`. Put one layer into one `run_batch`.
 7. **Validate** with `validate_project`. Then ask the user whether to run `validate_semantic_model` for the layer; run
    it only on a yes.
@@ -98,6 +100,22 @@ User: "Create a historized dimension for Customer."
    - `create_model_object(type: "Entity", name: "Customer")`,
      `add_terms(target: "Entity:Customer", source: "Stage:Customer", terms: ["Id", "Name", "City"], businessKeys: ["Id"], historization: "SCD2")`,
      `build_dataflow(target: "Entity:Customer", sources: ["Stage:Customer"], mappings: ["BG_SourceSystem='CRM'"])`
+4. `validate_project`, `download_changes`, then the hand-over as above.
+
+## Example: Datastore
+
+User: "Load Customer into the Datastore with history."
+
+1. `open_workspace`, run the upload command, `get_generator_catalog`: the types are Source, Stage, Store Entity and
+   Store Composite, the guides include `datastore`.
+2. Plan: Stage `Customer`, Store Entity `Customer` with business key `Id` and SCD2 attributes. Ask whether deleted rows
+   are detected and whether the source delivers a full or an incremental load. Wait for the OK.
+3. `run_batch` with:
+   - `create_model_object(type: "Stage", name: "Customer")`, `add_terms(target: "Stage:Customer", source: "Source:Customer", terms: ["*"])`,
+     `build_dataflow(target: "Stage:Customer", sources: ["Source:Customer"], mappings: ["BG_SourceSystem='CRM'"])`
+   - `create_model_object(type: "Store Entity", name: "Customer")`,
+     `add_terms(target: "Store Entity:Customer", source: "Stage:Customer", terms: ["*"], businessKeys: ["Id"])`,
+     `build_dataflow(target: "Store Entity:Customer", sources: ["Stage:Customer"], mappings: ["BG_SourceSystem='CRM'"])`
 4. `validate_project`, `download_changes`, then the hand-over as above.
 
 ## Without a shell
