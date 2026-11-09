@@ -1,7 +1,7 @@
 # biGENIUS Claude plugins
 
-Plugin `bigenius-x-modeling` for Claude Code: model biGENIUS-X projects (Data Vault or Dimensional, with Mart, or Datastore) with
-the biGENIUS modeling MCP server.
+Plugin `bigenius-x-modeling` for Claude Code: model biGENIUS-X projects of every generator (Stage, Data Vault, Dimensional,
+Datastore, Mart) with the biGENIUS modeling MCP server.
 
 | Path | Content |
 | --- | --- |
@@ -38,8 +38,8 @@ Everyone who opens the repository in Claude Code is asked to trust the folder an
 1. Log in with the biGENIUS account. In the terminal: run `/mcp` and select `bigenius-modeling`. In the Code tab of
    Claude Desktop: start a session and send a first message, because the server connects only in a running session;
    then open the MCP servers of the session and select **Connect** at `bigenius-modeling`.
-2. Ask, for example: "Which layers and objects does the project have?" or "Build Hub, Satellite and Dimension for
-   Customer from the CRM discovery."
+2. Ask, for example: "Which layers and objects does the project have?" or "Build a dimension for Customer from the CRM
+   discovery."
 
 For yourself only, without a change in the repository:
 

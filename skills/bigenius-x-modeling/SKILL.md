@@ -1,14 +1,14 @@
 ---
 name: bigenius-x-modeling
-description: Model a data warehouse in a biGENIUS-X project, Data Vault (Stage, Hub, Link, Satellite, views) or Dimensional (Stage, Entity, Fact), with Mart Dimension and Mart Fact, or Datastore (Stage, Store Entity), using the biGENIUS modeling MCP tools. Use when someone wants to create, change, check or delete model objects in a biGENIUS-X repository, or build a model from a discovery.
+description: Model a data warehouse in a biGENIUS-X project with the biGENIUS modeling MCP tools, for every generator (Stage, Data Vault, Dimensional, Datastore, Mart). Use when someone wants to create, change, check or delete model objects in a biGENIUS-X repository, set data quality rules, or build a model from a discovery.
 ---
 
 # biGENIUS-X modeling
 
-You build the model; biGENIUS-X generates the code from it. You decide what is built: hubs, links, satellites and views
-in a Data Vault project, entities and facts in a Dimensional project, store entities in a Datastore project, dimensions and facts in a mart. The tools of the MCP server `bigenius-modeling` write the project files the way
-the biGENIUS-X UI does: ids, default terms, foreign key and hash key terms, mapping stubs, and all follow-up changes when
-something is renamed or deleted.
+You build the model; biGENIUS-X generates the code from it. You decide what is built, from the model object types the
+generator of the project offers. The tools of the MCP server `bigenius-modeling` write the project files the way
+the biGENIUS-X UI does: ids, default terms, foreign key and hash key terms, mapping stubs, data quality rules the generator
+creates by default, and all follow-up changes when something is renamed or deleted.
 
 The server runs at `https://<host>/modeling`. If the tools are missing, connect it first:
 `claude mcp add --transport http bigenius-modeling https://<host>/modeling`
@@ -17,7 +17,7 @@ The server runs at `https://<host>/modeling`. If the tools are missing, connect 
 
 1. **No invented ids.** Every GUID comes from a tool (`new_ids` for manual edits) or from an existing file.
 2. **Structure changes only through the tools:** `create_model_object`, `add_relationship`, `set_relationship_properties`,
-   `set_object_properties`, `set_term_properties`, `set_term_data_type`, `add_terms`, `add_term`, `set_business_key`, `set_data_classification`, `build_dataflow`, `rename_model_element`,
+   `set_object_properties`, `set_term_properties`, `set_term_data_type`, `add_terms`, `add_term`, `set_business_key`, `set_data_quality_rule`, `set_data_classification`, `build_dataflow`, `rename_model_element`,
    `delete_model_element`, `add_to_view`, or several of them in `run_batch`.
 3. **By hand only what has no cascade:** expressions in mappings and filters, descriptions, properties. Then call
    `sync_workspace` and `validate_project`.
@@ -34,6 +34,11 @@ The server runs at `https://<host>/modeling`. If the tools are missing, connect 
 8. **Project settings** (hashing, historization, deployment, governance) are in `project.yml`: read them with
    `get_project_settings`. Usually they stay as they are. Change them with `set_project_settings` only when the user
    asks for it or a requirement of the user needs it, and only after the user's OK.
+9. **The generator configuration decides what is possible.** Types, relationships, sources, properties, default values
+   and data quality rules differ per generator. Look them up with `get_generator_catalog` and `describe_type`; never assume
+   them from a guide, an example or another project.
+10. **Data quality rules** the generator creates by default come with the objects, and the result of the tool names them.
+    Set further rules with `set_data_quality_rule` only when the user asks for them.
 
 ## Process
 
@@ -47,18 +52,15 @@ The server runs at `https://<host>/modeling`. If the tools are missing, connect 
 2. **Read** with `list_project_objects`, `show_project_object`, `list_views` and the discovery files under `discoveries/`. Source
    objects, discoveries and linked projects come from the Discovery App and the biGENIUS-X UI; when one is missing, tell
    the user the steps from `get_modeling_guide` with `data-connections`.
-3. **Check the architecture** with `get_generator_catalog`. It lists the types this project can create and the guides
-   that apply. Plan only with these types. When a type is refused, do not rebuild it with a pattern of another
-   architecture: in a Dimensional project a dimension is an Entity, not a Hub with a Satellite or a Reference Table; in a
-   Datastore project a source table is a Stage with a Store Entity, without relationships.
-4. **Look up the rules** of each type before using it the first time: `describe_type`. It also lists the properties the
-   generator offers for the type; a name can mean something else on another type. Guidance and recipes:
-   `get_modeling_guide` with `process`, `raw-vault`, `business-vault`, `dimensional`, `datastore`, `mart`, `naming`, `repo-format` or
-   `data-connections`.
+3. **Check the architecture** with `get_generator_catalog`. It lists the types this project can create, the types it can
+   only read from a linked project and the guides that apply. Plan only with these types. When a type is refused, do not
+   rebuild it with a pattern of another architecture.
+4. **Look up the rules** of each type before using it the first time: `describe_type`. A property name can mean something
+   else on another type. Guidance and examples of the calls for this architecture: `get_modeling_guide` with `process` and
+   the guides of the catalog.
 5. **Plan** and get the user's OK.
-6. **Build layer by layer**, a small vertical slice first: Stage, Raw Vault, Business Vault, Mart in a Data Vault
-   project; Stage, Entity and Fact, and optionally the Mart in a Dimensional project, by use case: ask; Stage and Store Entity in a Datastore project. Per object: `create_model_object`, `add_relationship`,
-   `add_terms`, `build_dataflow`. Put one layer into one `run_batch`.
+6. **Build layer by layer**, from the sources upward (`dataflowSources` in `describe_type`), a small vertical slice first.
+   Per object: `create_model_object`, `add_relationship`, `add_terms`, `build_dataflow`. Put one layer into one `run_batch`.
 7. **Validate** with `validate_project`. Then ask the user whether to run `validate_semantic_model` for the layer; run
    it only on a yes.
 8. **Write the changes into the repository** with `download_changes` after each layer and before any manual edit. Run the
@@ -67,56 +69,19 @@ The server runs at `https://<host>/modeling`. If the tools are missing, connect 
    `calculate_architecture_model` (then `get_architecture_model_status`) before the user opens the repository in
    biGENIUS-X. Findings from the architecture model calculation or the UI come back to you (prompt `fix_findings`).
 
-## Example: Data Vault
+## Example
 
-User: "Build Hub, Satellite and Dimension for Customer from the CRM discovery."
+User: "Build a dimension for Customer from the CRM discovery."
 
 1. `open_workspace`, run the upload command.
-2. `get_generator_catalog`, `list_project_objects`, `show_project_object("Source:Customer")`, `describe_type("Hub")`.
-3. Plan: Stage `Customer`, Hub `Customer` with business key `CustomerId`, Satellite `Customer` with the descriptive
-   attributes, Business Current View, Mart Dimension `Customer` as SCD1. Wait for the OK.
-4. `run_batch` with:
-   - `create_model_object(type: "Stage", name: "Customer")`, `add_terms(target: "Stage:Customer", source: "Source:Customer", terms: ["*"])`,
-     `build_dataflow(target: "Stage:Customer", sources: ["Source:Customer"], mappings: ["BG_SourceSystem='CRM'"])`
-   - `create_model_object(type: "Hub", name: "Customer")`, `add_terms(target: "Hub:Customer", source: "Stage:Customer", terms: ["CustomerId"], businessKeys: ["CustomerId"])`,
-     `build_dataflow(target: "Hub:Customer", sources: ["Stage:Customer"], mappings: ["BG_SourceSystem='CRM'"], dataflowProperties: ["DeduplicationMethod=Distinct"])`
-   - `create_model_object(type: "Satellite", name: "Customer")`, `add_relationship(target: "Satellite:Customer", referenced: "Hub:Customer")`,
-     `add_terms(target: "Satellite:Customer", source: "Stage:Customer", terms: ["Title", "FirstName", "LastName"])`,
-     `build_dataflow(target: "Satellite:Customer", sources: ["Stage:Customer"], mappings: ["FK_Customer_CustomerId=s1.CustomerId", "BG_SourceSystem='CRM'"])`
-5. `validate_project`, then the same for the Business Current View and the Mart Dimension.
-6. `download_changes`, run the command and its delete command.
-7. Tell the user what changed and ask whether to run `calculate_architecture_model`; then what to check in the biGENIUS-X UI.
-
-## Example: Dimensional
-
-User: "Create a historized dimension for Customer."
-
-1. `open_workspace`, run the upload command, `get_generator_catalog`: the types are Stage, Entity, Fact and the mart
-   types, the guides include `dimensional`.
-2. Plan: Stage `Customer`, Entity `Customer` with business key `Id` and SCD2 attributes. Wait for the OK.
-3. `run_batch` with:
-   - `create_model_object(type: "Stage", name: "Customer")`, `add_terms(target: "Stage:Customer", source: "Source:Customer", terms: ["*"])`,
-     `build_dataflow(target: "Stage:Customer", sources: ["Source:Customer"], mappings: ["BG_SourceSystem='CRM'"])`
-   - `create_model_object(type: "Entity", name: "Customer")`,
-     `add_terms(target: "Entity:Customer", source: "Stage:Customer", terms: ["Id", "Name", "City"], businessKeys: ["Id"], historization: "SCD2")`,
-     `build_dataflow(target: "Entity:Customer", sources: ["Stage:Customer"], mappings: ["BG_SourceSystem='CRM'"])`
-4. `validate_project`, `download_changes`, then the hand-over as above.
-
-## Example: Datastore
-
-User: "Load Customer into the Datastore with history."
-
-1. `open_workspace`, run the upload command, `get_generator_catalog`: the types are Source, Stage, Store Entity and
-   Store Composite, the guides include `datastore`.
-2. Plan: Stage `Customer`, Store Entity `Customer` with business key `Id` and SCD2 attributes. Ask whether deleted rows
-   are detected and whether the source delivers a full or an incremental load. Wait for the OK.
-3. `run_batch` with:
-   - `create_model_object(type: "Stage", name: "Customer")`, `add_terms(target: "Stage:Customer", source: "Source:Customer", terms: ["*"])`,
-     `build_dataflow(target: "Stage:Customer", sources: ["Source:Customer"], mappings: ["BG_SourceSystem='CRM'"])`
-   - `create_model_object(type: "Store Entity", name: "Customer")`,
-     `add_terms(target: "Store Entity:Customer", source: "Stage:Customer", terms: ["*"], businessKeys: ["Id"])`,
-     `build_dataflow(target: "Store Entity:Customer", sources: ["Stage:Customer"], mappings: ["BG_SourceSystem='CRM'"])`
-4. `validate_project`, `download_changes`, then the hand-over as above.
+2. `get_generator_catalog`, `get_modeling_guide` with `process` and the guides of the catalog, `list_project_objects`, the
+   Source object with `show_project_object`, `describe_type` for each type of the plan.
+3. Plan with the types of the catalog: objects per layer with business keys, relationships and historization. Ask what is
+   unclear. Wait for the OK.
+4. `run_batch` per layer with the calls the guide of the architecture shows, then `validate_project`.
+5. `download_changes`, run the command and its delete command.
+6. Tell the user what changed, including the data quality rules that came with the objects, and ask whether to run
+   `calculate_architecture_model`; then what to check in the biGENIUS-X UI.
 
 ## Without a shell
 
