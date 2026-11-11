@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "bigenius-marketplace": {
+      "type": "http",
+      "url": "https://mcp.bigenius-x.com/marketplace"
+    }
+  }
+}

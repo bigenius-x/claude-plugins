@@ -6,8 +6,13 @@
   "plugins": [
     {
       "name": "bigenius-x-modeling",
-      "source": "./",
+      "source": "./plugins/bigenius-x-modeling",
       "description": "Model biGENIUS-X projects with the biGENIUS modeling MCP server."
+    },
+    {
+      "name": "bigenius-data-marketplace",
+      "source": "./plugins/bigenius-data-marketplace",
+      "description": "Find data products in the biGENIUS Data Marketplace and write SQL for them."
     }
   ]
 }
