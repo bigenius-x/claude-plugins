@@ -1,6 +1,6 @@
 ---
 name: bigenius-x-modeling
-description: Model a data warehouse in a biGENIUS-X project with the biGENIUS modeling MCP tools, for every generator (Stage, Data Vault, Dimensional, Datastore, Mart). Use when someone wants to create, change, check or delete model objects in a biGENIUS-X repository, set data quality rules, or build a model from a discovery.
+description: Model a data warehouse in a biGENIUS-X project with the biGENIUS modeling MCP tools, for every generator (Stage, Data Vault, Dimensional, Datastore, Mart). Use when someone wants to create, change, check or delete model objects in a biGENIUS-X repository, set data quality rules, or build a model from a discovery. Also use for questions about a biGENIUS-X project (a folder with project.yml, modelobjects and views): which views, layers, model objects, business keys, relationships or dataflows it has.
 ---
 
 # biGENIUS-X modeling
@@ -52,6 +52,8 @@ The server runs at `https://<host>/modeling`. If the tools are missing, connect 
 2. **Read** with `list_project_objects`, `show_project_object`, `list_views` and the discovery files under `discoveries/`. Source
    objects, discoveries and linked projects come from the Discovery App and the biGENIUS-X UI; when one is missing, tell
    the user the steps from `get_modeling_guide` with `data-connections`.
+   Answer questions about the project with these tools as well, not by reading the YAML files: the files are named by
+   id, and the tools resolve the names, layers and references.
 3. **Check the architecture** with `get_generator_catalog`. It lists the types this project can create, the types it can
    only read from a linked project and the guides that apply. Plan only with these types. When a type is refused, do not
    rebuild it with a pattern of another architecture.
