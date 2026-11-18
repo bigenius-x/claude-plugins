@@ -1,6 +1,6 @@
 ---
 name: bigenius-x-modeling
-description: Model a data warehouse in a biGENIUS-X project with the biGENIUS modeling MCP tools, for every generator (Stage, Data Vault, Dimensional, Datastore, Mart). Use when someone wants to create, change, check or delete model objects in a biGENIUS-X repository, set data quality rules, or build a model from a discovery. Also use for questions about a biGENIUS-X project (a folder with project.yml, modelobjects and views): which views, layers, model objects, business keys, relationships or dataflows it has.
+description: "Model a data warehouse in a biGENIUS-X project with the biGENIUS modeling MCP tools, for every generator (Stage, Data Vault, Dimensional, Datastore, Mart). Use when someone wants to create, change, check or delete model objects in a biGENIUS-X repository, set data quality rules, or build a model from a discovery. Also use for questions about a biGENIUS-X project (a folder with project.yml, modelobjects and views): which views, layers, model objects, business keys, relationships or dataflows it has."
 ---
 
 # biGENIUS-X modeling
