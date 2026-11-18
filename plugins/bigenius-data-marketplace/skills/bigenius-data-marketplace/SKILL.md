@@ -1,6 +1,6 @@
 ---
 name: bigenius-data-marketplace
-description: Find data products in the biGENIUS Data Marketplace for a use case or a business question, and write SQL for their output ports that the customer's own agent runs. Use when someone asks which data product fits a use case, what a data product contains, or wants a query or report over one or more data products.
+description: "Find data products in the biGENIUS Data Marketplace for a use case or a business question, and write SQL for their output ports that the customer's own agent runs. Use when someone asks which data product fits a use case, what a data product contains, or wants a query or report over one or more data products."
 ---
 
 # biGENIUS Data Marketplace
@@ -14,8 +14,8 @@ If the tools are missing, connect the server: `claude mcp add --transport http b
 ## Process
 
 1. **Find.** `search_data_products` with words of the use case (or without, for all). Rank the candidates yourself
-   against the use case; the server does not rank. Only the products assigned to the user are listed: when nothing
-   fits, say so and that other products may exist.
+   against the use case; the server does not rank. All data products of the organization are listed: when nothing
+   fits, say so.
 2. **Decide.** `get_data_product` for the candidates. Name the output port that fits, what it contains and what the
    use case needs that it lacks. Prefer a port without classified columns when the use case does not need them.
 3. **Context.** `get_query_context` for the output ports to query. Read its `rules` first and follow them; they come

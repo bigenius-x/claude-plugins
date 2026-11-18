@@ -1,6 +1,6 @@
 {
   "name": "bigenius-data-marketplace",
-  "version": "1.0.26499",
+  "version": "1.0.26523",
   "description": "Find data products in the biGENIUS Data Marketplace for a use case and write SQL for their output ports: skill and server entry.",
   "author": {
     "name": "biGENIUS AG"

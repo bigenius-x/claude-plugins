@@ -29,8 +29,10 @@ The server runs at `https://<host>/modeling`. If the tools are missing, connect 
 6. **Validate after each layer** with `validate_project`. Fix errors, tell the user about warnings.
 7. **`validate_semantic_model` and `calculate_architecture_model` only when the user asks for it.** Never call them
    on your own. After a finished layer and before the hand-over, ask the user whether to run the semantic model
-   validation or the architecture model calculation. The calculation runs in the background: call
-   `get_architecture_model_status` until it is no longer `running`.
+   validation or the architecture model calculation. The calculation replaces the architecture model of a branch:
+   pass `branch`, the Git branch checked out in the repository (`git branch --show-current`), and name it in the
+   question. It runs in the background: call `get_architecture_model_status` with the same branch until it is no
+   longer `running`.
 8. **Project settings** (hashing, historization, deployment, governance) are in `project.yml`: read them with
    `get_project_settings`. Usually they stay as they are. Change them with `set_project_settings` only when the user
    asks for it or a requirement of the user needs it, and only after the user's OK.
@@ -66,10 +68,12 @@ The server runs at `https://<host>/modeling`. If the tools are missing, connect 
 7. **Validate** with `validate_project`. Then ask the user whether to run `validate_semantic_model` for the layer; run
    it only on a yes.
 8. **Write the changes into the repository** with `download_changes` after each layer and before any manual edit. Run the
-   returned command in the repository root, then its delete command (`deleteBash` or `deletePowerShell`).
+   returned command in the repository root, then its delete command (`deleteBash` or `deletePowerShell`) exactly as
+   returned. Never write your own delete command; the user approves the returned one.
 9. **Hand over:** list new and changed objects, open warnings and assumptions, and ask whether to run
-   `calculate_architecture_model` (then `get_architecture_model_status`) before the user opens the repository in
-   biGENIUS-X. Findings from the architecture model calculation or the UI come back to you (prompt `fix_findings`).
+   `calculate_architecture_model` for the checked-out branch (then `get_architecture_model_status`) before the user
+   opens the repository in biGENIUS-X. Findings from the architecture model calculation or the UI come back to you
+   (prompt `fix_findings`).
 
 ## Example
 
