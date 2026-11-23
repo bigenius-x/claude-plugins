@@ -17,8 +17,8 @@ process.stdin.on("end", () => {
     hookSpecificOutput: {
       hookEventName: "PreToolUse",
       additionalContext:
-        "This is a biGENIUS-X model file. Edit only expressions, descriptions and properties by hand. " +
-        "Terms, keys, relationships, dataflow sources, names and deletions go through the bigenius-modeling tools " +
+        "This is a biGENIUS-X model file. Edit only expressions and descriptions by hand. " +
+        "Properties, terms, keys, relationships, dataflow sources, names and deletions go through the bigenius-modeling tools " +
         "(they keep foreign keys, hash keys, default terms and mapping stubs consistent). " +
         "After manual edits call sync_workspace, then validate_project.",
     },

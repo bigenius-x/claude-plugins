@@ -9,7 +9,8 @@ The tools of the MCP server `bigenius-marketplace` read the Data Marketplace wit
 their output ports and data contracts. biGENIUS does not run queries. You write the SQL; the agent or tool of the
 customer that has access to the database runs it.
 
-If the tools are missing, connect the server: `claude mcp add --transport http bigenius-marketplace https://<host>/marketplace`
+If the tools of `bigenius-marketplace` are missing, the server is not connected: tell the user to add
+`https://mcp.bigenius-x.com/marketplace` as an MCP server in their client and to sign in with their biGENIUS account.
 
 ## Process
 

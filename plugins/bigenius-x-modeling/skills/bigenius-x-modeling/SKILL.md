@@ -10,8 +10,8 @@ generator of the project offers. The tools of the MCP server `bigenius-modeling`
 the biGENIUS-X UI does: ids, default terms, foreign key and hash key terms, mapping stubs, data quality rules the generator
 creates by default, and all follow-up changes when something is renamed or deleted.
 
-The server runs at `https://<host>/modeling`. If the tools are missing, connect it first:
-`claude mcp add --transport http bigenius-modeling https://<host>/modeling`
+If the tools of `bigenius-modeling` are missing, the server is not connected: tell the user to add
+`https://mcp.bigenius-x.com/modeling` as an MCP server in their client and to sign in with their biGENIUS account.
 
 ## Rules
 
@@ -19,8 +19,10 @@ The server runs at `https://<host>/modeling`. If the tools are missing, connect 
 2. **Structure changes only through the tools:** `create_model_object`, `add_relationship`, `set_relationship_properties`,
    `set_object_properties`, `set_term_properties`, `set_term_data_type`, `add_terms`, `add_term`, `set_business_key`, `set_data_quality_rule`, `set_data_classification`, `build_dataflow`, `rename_model_element`,
    `delete_model_element`, `add_to_view`, or several of them in `run_batch`.
-3. **By hand only what has no cascade:** expressions in mappings and filters, descriptions, properties. Then call
-   `sync_workspace` and `validate_project`.
+3. **By hand only what has no tool:** expressions in mappings and filters, and descriptions. Then call
+   `sync_workspace` and `validate_project`. Properties go through `set_object_properties`, `set_term_properties` and
+   `set_relationship_properties` (dataflow properties through `build_dataflow`), which check name and value against
+   the type.
 4. **Change existing objects only when the user asks for it.**
    **Views:** without a view named by the user, new objects go to the default view. When the user names a view, pass
    `view` to `create_model_object` and call `add_to_view` for changed objects; a view that does not exist yet is created.
@@ -35,7 +37,8 @@ The server runs at `https://<host>/modeling`. If the tools are missing, connect 
    longer `running`.
 8. **Project settings** (hashing, historization, deployment, governance) are in `project.yml`: read them with
    `get_project_settings`. Usually they stay as they are. Change them with `set_project_settings` only when the user
-   asks for it or a requirement of the user needs it, and only after the user's OK.
+   asks for it or a requirement of the user needs it, and only after the user's OK. Never change `config.yml`
+   (Advanced Settings); the user changes it in the biGENIUS-X UI.
 9. **The generator configuration decides what is possible.** Types, relationships, sources, properties, default values
    and data quality rules differ per generator. Look them up with `get_generator_catalog` and `describe_type`; never assume
    them from a guide, an example or another project.
@@ -48,8 +51,9 @@ The server runs at `https://<host>/modeling`. If the tools are missing, connect 
    - Call `open_workspace`. Run the returned command for your shell in the repository root:
      - bash, also Git Bash: `tar -czf - $(ls -d project.yml config.yml task-lists.yml modelobjects views discoveries 2>/dev/null) | curl -sf --upload-file - "<url>"`
      - PowerShell: the `powershell` command of the result (it writes a temp file and calls `tar.exe` and `curl.exe`).
-   - Run the transfer commands exactly as returned, as a command of their own: the plugin allows only these without a
-     prompt. Change into the repository root in a separate command first if needed.
+   - Run the transfer commands exactly as returned, as a command of their own: a changed command needs the user's
+     approval. In Claude Code the plugin allows only the unchanged commands without a prompt; other clients may ask
+     the user for each one. Change into the repository root in a separate command first if needed.
    - Use the `workspaceId` with all other tools.
 2. **Read** with `list_project_objects`, `show_project_object`, `list_views` and the discovery files under `discoveries/`. Source
    objects, discoveries and linked projects come from the Discovery App and the biGENIUS-X UI; when one is missing, tell
@@ -91,6 +95,6 @@ User: "Build a dimension for Customer from the CRM discovery."
 
 ## Without a shell
 
-In claude.ai or other clients without a shell, pass the project files inline with `files` (`project.yml`, `config.yml`,
+In clients without a shell (e.g. claude.ai), pass the project files inline with `files` (`project.yml`, `config.yml`,
 `views/*.yml` and the model objects, max 1 MB). The tools return the changed files. When a tool answers
 `needs_files`, add the listed files and call it again.
